@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Portfolio">
+<title>Property Portfolio</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22263a;
+  --border: #2e3248;
+  --accent: #4f8ef7;
+  --accent2: #7c5cbf;
+  --gold: #e8b84b;
+  --green: #3ecf8e;
+  --red: #f05252;
+  --amber: #f59e0b;
+  --ink: #f0f2ff;
+  --ink-mid: #c4cae8;
+  --ink-light: #8890b8;
+  --radius: 14px;
+  --pill-r: 20px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Georgia', serif;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+/* HEADER */
+.app-header {
+  background: linear-gradient(135deg, #0f1117 0%, #1a1425 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.app-title span { color: var(--gold); }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ALERTS BAR */
+.alerts-bar {
+  background: linear-gradient(90deg, #2a1a0a, #1a1117);
+  border-bottom: 1px solid #3d2a10;
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  color: var(--amber);
+  display: none;
+}
+.alerts-bar.has-alerts { display: block; }
+
+/* BUTTONS */
+.btn {
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  transition: all 0.15s;
+  -webkit-appearance: none;
+  letter-spacing: 0.01em;
+}
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:active { opacity: 0.85; }
+.btn-ghost {
+  background: var(--surface2);
+  color: var(--ink-mid);
+  border: 1px solid var(--border);
+}
+.btn-ghost:active { opacity: 0.75; }
+.btn-danger { background: var(--red); color: white; }
+.btn-secondary { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); }
+.btn-sm { padding: 6px 10px; font-size: 0.72rem; }
+
+/* SORT/FILTER BAR */
+.controls-bar {
+  padding: 10px 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.sort-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--ink-mid);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 5px 12px;
+  white-space: nowrap;
+  -webkit-appearance: none;
+}
+.sort-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+/* SUMMARY STATS */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.stat-box {
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+}
+.stat-label { font-size: 0.65rem; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.stat-value { font-size: 1rem; font-weight: 700; color: var(--ink); }
+.stat-value.gold { color: var(--gold); }
+.stat-value.red { color: var(--red); }
+
+/* CARDS GRID */
+.cards-grid {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* PROPERTY CARD */
+.prop-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.card-stripe {
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+.card-stripe.alert { background: linear-gradient(90deg, var(--red), var(--amber)); }
+.card-stripe.warn { background: linear-gradient(90deg, var(--amber), var(--gold)); }
+.card-main { padding: 14px 14px 10px; }
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+.card-address {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+  flex: 1;
+}
+.card-postcode {
+  font-size: 0.75rem;
+  color: var(--ink-mid);
+  margin-top: 2px;
+  margin-bottom: 8px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
+}
+.card-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.meta-badge {
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.badge-owned { background: #1a2f4a; color: var(--accent); }
+.badge-nomort { background: #1a2e1a; color: var(--green); }
+.badge-alert { background: #2e1a1a; color: var(--red); }
+.badge-warn { background: #2e2410; color: var(--amber); }
+.card-actions { display: flex; gap: 6px; margin-left: auto; }
+
+/* PILL BUTTONS */
+.pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--pill-r);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  -webkit-appearance: none;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.cat-pill.has-data {
+  background: var(--surface2);
+  border-color: var(--border);
+  color: var(--ink-mid);
+}
+.cat-pill.has-data:active { opacity: 0.75; }
+.cat-pill.has-data.open {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+.cat-pill.has-data.alert-pill {
+  border-color: var(--red);
+  color: var(--red);
+}
+.cat-pill.has-data.warn-pill {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.cat-pill.no-data {
+  background: none;
+  border-color: var(--border);
+  color: var(--ink-light);
+  opacity: 0.5;
+  cursor: default;
+}
+.pill-chevron { font-size: 0.55rem; transition: transform 0.2s; }
+.cat-pill.open .pill-chevron { transform: rotate(180deg); }
+
+/* DETAIL PANELS */
+.cat-detail {
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.78rem;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-label { color: var(--ink-mid); flex-shrink: 0; margin-right: 12px; }
+.detail-value { color: var(--ink); text-align: right; }
+.detail-value.green { color: var(--green); font-weight: 600; }
+.detail-value.red { color: var(--red); font-weight: 600; }
+.detail-value.amber { color: var(--amber); font-weight: 600; }
+.detail-value.gold { color: var(--gold); font-weight: 600; }
+.detail-section-title {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-light);
+  margin-bottom: 6px;
+  margin-top: 8px;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink-light);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+/* MODAL */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 200;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+.modal-box {
+  background: var(--surface);
+  border-radius: 18px;
+  width: calc(100% - 32px);
+  max-width: 480px;
+  border: 1px solid var(--border);
+  margin: auto;
+}
+.modal-header {
+  padding: 16px 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.modal-title { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+.modal-close {
+  background: var(--surface2);
+  border: none;
+  border-radius: 50%;
+  color: var(--ink-mid);
+  cursor: pointer;
+  font-size: 1.1rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-body { padding: 0 16px 16px; }
+.modal-section {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+}
+.modal-section-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-light);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+.form-group { margin-bottom: 10px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.form-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+label { display: block; font-size: 0.7rem; color: var(--ink-mid); margin-bottom: 4px; font-size: 0.72rem; }
+input, select, textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.82rem;
+  padding: 8px 10px;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+select option { background: var(--surface); }
+.cert-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.cert-item { }
+.modal-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--border);
+}
+.modal-footer .btn { flex: 1; padding: 12px; font-size: 0.85rem; }
+
+/* CONFIRM */
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 300;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.confirm-box {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px;
+  width: calc(100% - 48px);
+  max-width: 320px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.confirm-box h3 { margin-bottom: 8px; color: var(--ink); }
+.confirm-box p { font-size: 0.82rem; color: var(--ink-mid); margin-bottom: 16px; }
+.confirm-btns { display: flex; gap: 8px; }
+.confirm-btns .btn { flex: 1; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  z-index: 400;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">🏠 Property <span>Portfolio</span></div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
+    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add</button>
+  </div>
+</header>
+
+<div class="alerts-bar" id="alerts-bar"></div>
+
+<div class="stats-row" id="stats-row"></div>
+
+<div class="controls-bar">
+  <button class="sort-btn active" id="sort-order" onclick="setSort('order',this)">My Order</button>
+  <button class="sort-btn" id="sort-alerts" onclick="setSort('alerts',this)">⚠ Alerts first</button>
+  <button class="sort-btn" id="sort-mortgage" onclick="setSort('mortgage',this)">Mortgage end</button>
+</div>
+
+<div class="cards-grid" id="cards-container"></div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="handleBackdropClick(event)" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Add Property</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProperty()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-backdrop" id="confirm-backdrop" style="display:none">
+  <div class="confirm-box">
+    <h3>Delete Property?</h3>
+    <p>This will permanently remove this property and all its data.</p>
+    <div class="confirm-btns">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+const STORAGE_KEY = 'propertyPortfolioData_v1';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw && raw !== 'null') {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch(e) {}
+  return [];
+}
+
+function saveData(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+let properties = loadData();
+let currentSort = 'address';
+let editingId = null;
+let deleteId = null;
+
+// ══════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const [y,m,day] = d.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return day + ' ' + months[parseInt(m)-1] + ' ' + y;
+}
+
+function fmtMoney(n) {
+  if (!n && n !== 0) return '—';
+  return '£' + Number(n).toLocaleString('en-GB', {minimumFractionDigits:0, maximumFractionDigits:2});
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const d = new Date(dateStr);
+  return Math.round((d - now) / (1000*60*60*24));
+}
+
+function certStatus(expiry) {
+  if (!expiry) return 'missing';
+  const days = daysUntil(expiry);
+  if (days < 0) return 'expired';
+  if (days <= 60) return 'due';
+  return 'ok';
+}
+
+function alarmStatus(dateChecked) {
+  // Goes amber after 11 months, red after 12 months
+  if (!dateChecked) return 'missing';
+  const checked = new Date(dateChecked);
+  const now = new Date();
+  const monthsAgo = (now - checked) / (1000*60*60*24*30.44);
+  if (monthsAgo >= 12) return 'overdue';
+  if (monthsAgo >= 11) return 'due';
+  return 'ok';
+}
+
+function alarmLabel(dateChecked) {
+  if (!dateChecked) return '—';
+  const status = alarmStatus(dateChecked);
+  const checked = new Date(dateChecked);
+  const now = new Date();
+  const monthsAgo = Math.floor((now - checked) / (1000*60*60*24*30.44));
+  const formatted = fmtDate(dateChecked);
+  if (status === 'overdue') return 'OVERDUE — checked ' + formatted;
+  if (status === 'due') return 'Due check — last ' + formatted;
+  return 'Checked ' + formatted;
+}
+
+function alarmClass(dateChecked) {
+  const s = alarmStatus(dateChecked);
+  if (s === 'overdue') return 'red';
+  if (s === 'due') return 'amber';
+  if (s === 'ok') return 'green';
+  return '';
+}
+
+function certClass(status) {
+  if (status === 'expired') return 'red';
+  if (status === 'due') return 'amber';
+  if (status === 'ok') return 'green';
+  return '';
+}
+
+function certLabel(status, expiry) {
+  if (!expiry) return '—';
+  const days = daysUntil(expiry);
+  if (days < 0) return 'EXPIRED ' + fmtDate(expiry);
+  if (days === 0) return 'Expires today!';
+  if (days <= 60) return 'Due ' + fmtDate(expiry) + ' (' + days + 'd)';
+  return fmtDate(expiry);
+}
+
+function getPropertyAlerts(p) {
+  const alerts = [];
+  const certs = ['gas','electric','epc','fire','legionella','pat'];
+  const certNames = {gas:'Gas',electric:'Electric',epc:'EPC',fire:'Fire',legionella:'Legionella',pat:'PAT'};
+  certs.forEach(c => {
+    const expiry = p.certs?.[c];
+    const status = certStatus(expiry);
+    if (status === 'expired') alerts.push({type:'error', msg: certNames[c] + ' cert EXPIRED'});
+    else if (status === 'due') alerts.push({type:'warn', msg: certNames[c] + ' cert due soon (' + fmtDate(expiry) + ')'});
+    else if (status === 'missing') alerts.push({type:'info', msg: certNames[c] + ' cert not recorded'});
+  });
+  // Smoke alarms
+  ['smoke1','smoke2'].forEach((k,i) => {
+    const d = p.alarms?.[k];
+    if (d) {
+      const s = alarmStatus(d);
+      if (s === 'overdue') alerts.push({type:'error', msg:'Smoke alarm ' + (i+1) + ' check OVERDUE'});
+      else if (s === 'due') alerts.push({type:'warn', msg:'Smoke alarm ' + (i+1) + ' due check'});
+    }
+  });
+  // CO detector
+  if (p.alarms?.co) {
+    const s = alarmStatus(p.alarms.co);
+    if (s === 'overdue') alerts.push({type:'error', msg:'CO detector check OVERDUE'});
+    else if (s === 'due') alerts.push({type:'warn', msg:'CO detector due check'});
+  }
+
+  if (p.insurance?.renewal) {
+    const days = daysUntil(p.insurance.renewal);
+    if (days !== null && days < 0) alerts.push({type:'error', msg:'Insurance EXPIRED'});
+    else if (days !== null && days <= 60) alerts.push({type:'warn', msg:'Insurance renewal due ' + fmtDate(p.insurance.renewal)});
+  }
+  if (p.mortgage?.rateEnd && !p.mortgage?.noMortgage) {
+    const days = daysUntil(p.mortgage.rateEnd);
+    if (days !== null && days < 0) alerts.push({type:'warn', msg:'Mortgage rate ended ' + fmtDate(p.mortgage.rateEnd)});
+    else if (days !== null && days <= 90) alerts.push({type:'warn', msg:'Mortgage rate ending ' + fmtDate(p.mortgage.rateEnd)});
+  }
+  return alerts;
+}
+
+// ══════════════════════════════════════
+// SORT
+// ══════════════════════════════════════
+function setSort(s, btn) {
+  currentSort = s;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function sortedProperties() {
+  const arr = [...properties];
+  if (currentSort === 'alerts') {
+    arr.sort((a,b) => {
+      const aErr = getPropertyAlerts(a).filter(x=>x.type==='error').length;
+      const bErr = getPropertyAlerts(b).filter(x=>x.type==='error').length;
+      if (aErr !== bErr) return bErr - aErr;
+      const aWarn = getPropertyAlerts(a).filter(x=>x.type==='warn').length;
+      const bWarn = getPropertyAlerts(b).filter(x=>x.type==='warn').length;
+      return bWarn - aWarn;
+    });
+  } else if (currentSort === 'mortgage') {
+    arr.sort((a,b) => {
+      const ad = a.mortgage?.mortgageEnd || '9999-99-99';
+      const bd = b.mortgage?.mortgageEnd || '9999-99-99';
+      return ad.localeCompare(bd);
+    });
+  }
+  // default: entry order (no sort)
+  return arr;
+}
+
+// ══════════════════════════════════════
+// STATS
+// ══════════════════════════════════════
+function renderStats() {
+  const total = properties.length;
+  const withMortgage = properties.filter(p => !p.mortgage?.noMortgage && p.mortgage?.balance).length;
+  const totalBalance = properties.reduce((s,p) => {
+    if (!p.mortgage?.noMortgage && p.mortgage?.balance) s += parseFloat(p.mortgage.balance)||0;
+    return s;
+  }, 0);
+  const alertCount = properties.reduce((s,p) => s + getPropertyAlerts(p).filter(x=>x.type==='error'||x.type==='warn').length, 0);
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-box">
+      <div class="stat-label">Properties</div>
+      <div class="stat-value gold">${total}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Mortgaged</div>
+      <div class="stat-value">${withMortgage}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Alerts</div>
+      <div class="stat-value ${alertCount > 0 ? 'red' : ''}">${alertCount}</div>
+    </div>`;
+
+  const alertsBar = document.getElementById('alerts-bar');
+  const criticalAlerts = [];
+  properties.forEach(p => {
+    getPropertyAlerts(p).filter(x=>x.type==='error').forEach(a => {
+      criticalAlerts.push(p.address + ': ' + a.msg);
+    });
+  });
+  if (criticalAlerts.length) {
+    alertsBar.className = 'alerts-bar has-alerts';
+    alertsBar.textContent = '⚠ ' + criticalAlerts.slice(0,3).join(' · ') + (criticalAlerts.length > 3 ? ' +' + (criticalAlerts.length-3) + ' more' : '');
+  } else {
+    alertsBar.className = 'alerts-bar';
+  }
+}
+
+// ══════════════════════════════════════
+// RENDER CARDS
+// ══════════════════════════════════════
+function toggleDetail(key) {
+  const d = document.getElementById('detail-' + key);
+  const p = document.getElementById('pill-' + key);
+  if (!d) return;
+  const isOpen = d.style.display === 'block';
+  d.style.display = isOpen ? 'none' : 'block';
+  if (p) {
+    p.classList.toggle('open', !isOpen);
+  }
+}
+
+function render() {
+  renderStats();
+  const container = document.getElementById('cards-container');
+  const data = sortedProperties();
+
+  if (!data.length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🏠</div>
+      <h2 style="color:var(--ink-mid);margin-bottom:8px">No properties yet</h2>
+      <p>Tap <strong>+ Add</strong> to add your first property.</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = data.map(p => {
+    const id = p.id;
+    const alerts = getPropertyAlerts(p);
+    const hasErrors = alerts.some(a => a.type === 'error');
+    const hasWarns = alerts.some(a => a.type === 'warn');
+    const stripeClass = hasErrors ? 'alert' : hasWarns ? 'warn' : '';
+
+    const hasMortgage = !p.mortgage?.noMortgage && (p.mortgage?.lender || p.mortgage?.accountNo || p.mortgage?.balance || p.mortgage?.rate || p.mortgage?.rateEnd || p.mortgage?.mortgageEnd || p.mortgage?.monthlyPayment);
+    const noMortgage = p.mortgage?.noMortgage;
+    const hasCerts = p.certs && Object.values(p.certs).some(v => v);
+    const hasInsurance = p.insurance?.provider || p.insurance?.renewal || p.insurance?.policyNo || p.insurance?.premium;
+    const hasNotes = !!(p.notes);
+    const hasAlarms = !!(p.alarms?.smoke1 || p.alarms?.smoke2 || p.alarms?.co);
+    const alarmAlerts = alerts.filter(a => a.msg.includes('alarm') || a.msg.includes('CO') || a.msg.includes('detector'));
+    const alarmPillClass = alarmAlerts.some(a=>a.type==='error') ? 'alert-pill' : alarmAlerts.some(a=>a.type==='warn') ? 'warn-pill' : '';
+
+    // Cert alert pill class
+    const certAlerts = alerts.filter(a => a.msg.includes('cert'));
+    const certPillClass = certAlerts.some(a=>a.type==='error') ? 'alert-pill' : certAlerts.some(a=>a.type==='warn') ? 'warn-pill' : '';
+    const insAlerts = alerts.filter(a => a.msg.includes('nsurance'));
+    const insPillClass = insAlerts.some(a=>a.type==='error') ? 'alert-pill' : insAlerts.some(a=>a.type==='warn') ? 'warn-pill' : '';
+    const mortAlerts = alerts.filter(a => a.msg.includes('ortgage'));
+    const mortPillClass = mortAlerts.some(a=>a.type==='warn') ? 'warn-pill' : '';
+
+    function pill(section, icon, label, hasData, extraClass='') {
+      if (hasData) return '<button class="cat-pill has-data ' + extraClass + '" id="pill-' + id + '-' + section + '" onclick="toggleDetail(\'' + id + '-' + section + '\')" style="display:inline-flex;align-items:center;gap:4px">' + icon + ' ' + label + ' <span class="pill-chevron">\u25bc</span></button>';
+      return '<button class="cat-pill no-data" style="display:inline-flex;align-items:center;gap:4px" disabled>' + icon + ' ' + label + '</button>';
+    }
+
+    // Mortgage detail
+    let mortDetail = '';
+    if (hasMortgage) {
+      const m = p.mortgage;
+      mortDetail = `<div class="cat-detail" id="detail-${id}-mortgage" style="display:none">
+        ${m.lender ? `<div class="detail-row"><span class="detail-label">Lender</span><span class="detail-value">${m.lender}</span></div>` : ''}
+        ${m.accountNo ? `<div class="detail-row"><span class="detail-label">Account No</span><span class="detail-value">${m.accountNo}</span></div>` : ''}
+        ${m.monthlyPayment ? `<div class="detail-row"><span class="detail-label">Monthly Payment</span><span class="detail-value gold">${fmtMoney(m.monthlyPayment)}</span></div>` : ''}
+        ${m.rate ? `<div class="detail-row"><span class="detail-label">Interest Rate</span><span class="detail-value">${m.rate}%</span></div>` : ''}
+        ${m.rateEnd ? `<div class="detail-row"><span class="detail-label">Rate Ends</span><span class="detail-value ${mortPillClass ? 'amber' : ''}">${fmtDate(m.rateEnd)}</span></div>` : ''}
+        ${m.mortgageEnd ? `<div class="detail-row"><span class="detail-label">Mortgage Ends</span><span class="detail-value">${fmtDate(m.mortgageEnd)}</span></div>` : ''}
+        ${m.balance ? `<div class="detail-row"><span class="detail-label">Outstanding</span><span class="detail-value red">${fmtMoney(m.balance)}</span></div>` : ''}
+      </div>`;
+    }
+
+    // Certs detail
+    const certNames = {gas:'⛽ Gas',electric:'⚡ Electric',epc:'🏷 EPC',fire:'🔥 Fire',legionella:'💧 Legionella',pat:'🔌 PAT'};
+    let certsDetail = '';
+    if (hasCerts) {
+      certsDetail = `<div class="cat-detail" id="detail-${id}-certs" style="display:none">
+        ${Object.entries(certNames).map(([k,label]) => {
+          const expiry = p.certs?.[k];
+          const status = certStatus(expiry);
+          const cls = certClass(status);
+          return expiry ? `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-value ${cls}">${certLabel(status, expiry)}</span></div>` : '';
+        }).join('')}
+      </div>`;
+    }
+
+    // Insurance detail
+    let insDetail = '';
+    if (hasInsurance) {
+      const ins = p.insurance;
+      const insStatus = ins.renewal ? (daysUntil(ins.renewal) < 0 ? 'red' : daysUntil(ins.renewal) <= 60 ? 'amber' : 'green') : '';
+      insDetail = `<div class="cat-detail" id="detail-${id}-insurance" style="display:none">
+        ${ins.provider ? `<div class="detail-row"><span class="detail-label">Provider</span><span class="detail-value">${ins.provider}</span></div>` : ''}
+        ${ins.policyNo ? `<div class="detail-row"><span class="detail-label">Policy No</span><span class="detail-value">${ins.policyNo}</span></div>` : ''}
+        ${ins.renewal ? `<div class="detail-row"><span class="detail-label">Renewal</span><span class="detail-value ${insStatus}">${fmtDate(ins.renewal)}</span></div>` : ''}
+        ${ins.premium ? `<div class="detail-row"><span class="detail-label">Annual Premium</span><span class="detail-value gold">${fmtMoney(ins.premium)}</span></div>` : ''}
+      </div>`;
+    }
+
+    // Notes detail
+    let notesDetail = '';
+    if (hasNotes) {
+      notesDetail = `<div class="cat-detail" id="detail-${id}-notes" style="display:none">
+        <div style="font-size:0.8rem;color:var(--ink-mid);line-height:1.5">${p.notes.replace(/\n/g,'<br>')}</div>
+      </div>`;
+    }
+
+    let alarmsDetail = '';
+    if (hasAlarms) {
+      const a = p.alarms;
+      alarmsDetail = '<div class="cat-detail" id="detail-' + id + '-alarms" style="display:none">' +
+        (a.smoke1 ? '<div class="detail-row"><span class="detail-label">🔴 Smoke Alarm 1</span><span class="detail-value ' + alarmClass(a.smoke1) + '">' + alarmLabel(a.smoke1) + '</span></div>' : '') +
+        (a.smoke2 ? '<div class="detail-row"><span class="detail-label">🔴 Smoke Alarm 2</span><span class="detail-value ' + alarmClass(a.smoke2) + '">' + alarmLabel(a.smoke2) + '</span></div>' : '') +
+        (a.co ? '<div class="detail-row"><span class="detail-label">💨 CO Detector</span><span class="detail-value ' + alarmClass(a.co) + '">' + alarmLabel(a.co) + '</span></div>' : '') +
+        '</div>';
+    }
+
+    const mortLabel = noMortgage ? '🏠 Owned' : '🏦 Mortgage';
+    const mortPill = noMortgage
+      ? `<span class="meta-badge badge-nomort">Mortgage Free</span>`
+      : pill('mortgage', '🏦', 'Mortgage', hasMortgage, mortPillClass);
+
+    return `<div class="prop-card">
+      <div class="card-stripe ${stripeClass}"></div>
+      <div class="card-main">
+        <div class="card-top">
+          <div>
+            <div class="card-address">${p.address || 'Unnamed Property'}</div>
+            <div class="card-postcode">${p.postcode || ''}</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openEditModal('${id}')">✏</button>
+            <button class="btn btn-ghost btn-sm" onclick="askDelete('${id}')">🗑</button>
+          </div>
+        </div>
+        <div class="pills-row">
+          ${noMortgage ? `<span class="cat-pill no-data" style="border-color:var(--green);color:var(--green);opacity:1">🏠 Owned</span>` : pill('mortgage', '🏦', 'Mortgage', hasMortgage, mortPillClass)}
+          ${pill('certs', '📋', 'Certificates', hasCerts, certPillClass)}
+          ${pill('insurance', '🛡', 'Insurance', hasInsurance, insPillClass)}
+          ${pill('notes', '📝', 'Notes', hasNotes)}
+          ` + pill('alarms', '🚨', 'Alarms', hasAlarms, alarmPillClass) + `
+        </div>
+        ${mortDetail}${certsDetail}${insDetail}${notesDetail}` + alarmsDetail + `
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// MODAL FORM
+// ══════════════════════════════════════
+function buildForm(p = {}) {
+  const m = p.mortgage || {};
+  const c = p.certs || {};
+  const ins = p.insurance || {};
+  const a = p.alarms || {};
+  const noMort = m.noMortgage || false;
+
+  return `
+    <div class="modal-section">
+      <div class="modal-section-title">Property</div>
+      <div class="form-group">
+        <label>Address (first line) *</label>
+        <input id="f-address" type="text" value="${p.address||''}" placeholder="e.g. 14 High Street">
+      </div>
+      <div class="form-group">
+        <label>Postcode</label>
+        <input id="f-postcode" type="text" value="${p.postcode||''}" placeholder="e.g. B1 1AA" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="f-notes" rows="2" placeholder="Any notes...">${p.notes||''}</textarea>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Mortgage</div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="f-nomortgage" ${noMort?'checked':''} onchange="toggleMortgageFields()" style="width:auto">
+          No mortgage (owned outright)
+        </label>
+      </div>
+      <div id="mortgage-fields" style="display:${noMort?'none':'block'}">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Account Number</label>
+            <input id="f-accountno" type="text" value="${m.accountNo||''}">
+          </div>
+          <div class="form-group">
+            <label>Monthly Payment</label>
+            <input id="f-monthly" type="number" step="0.01" value="${m.monthlyPayment||''}" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Interest Rate (%)</label>
+            <input id="f-rate" type="number" step="0.01" value="${m.rate||''}" placeholder="e.g. 4.5">
+          </div>
+          <div class="form-group">
+            <label>Outstanding Balance</label>
+            <input id="f-balance" type="number" step="0.01" value="${m.balance||''}" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Rate Fix End Date</label>
+            <input id="f-rateend" type="date" value="${m.rateEnd||''}">
+          </div>
+          <div class="form-group">
+            <label>Mortgage End Date</label>
+            <input id="f-mortend" type="date" value="${m.mortgageEnd||''}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Safety Certificates (expiry dates)</div>
+      <div class="cert-grid">
+        <div class="form-group"><label>⛽ Gas Safety</label><input id="f-gas" type="date" value="${c.gas||''}"></div>
+        <div class="form-group"><label>⚡ Electrical (EICR)</label><input id="f-electric" type="date" value="${c.electric||''}"></div>
+        <div class="form-group"><label>🏷 EPC</label><input id="f-epc" type="date" value="${c.epc||''}"></div>
+        <div class="form-group"><label>🔥 Fire Safety</label><input id="f-fire" type="date" value="${c.fire||''}"></div>
+        <div class="form-group"><label>💧 Legionella</label><input id="f-legionella" type="date" value="${c.legionella||''}"></div>
+        <div class="form-group"><label>🔌 PAT Testing</label><input id="f-pat" type="date" value="${c.pat||''}"></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">🚨 Alarms (date last checked serviceable)</div>
+      <div class="cert-grid">
+        <div class="form-group"><label>🔴 Smoke Alarm 1</label><input id="f-smoke1" type="date" value="${a.smoke1||''}"></div>
+        <div class="form-group"><label>🔴 Smoke Alarm 2 (if applicable)</label><input id="f-smoke2" type="date" value="${a.smoke2||''}"></div>
+        <div class="form-group"><label>💨 CO Detector (if applicable)</label><input id="f-co" type="date" value="${a.co||''}"></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Insurance</div>
+      <div class="form-row">
+        <div class="form-group"><label>Provider</label><input id="f-insprovider" type="text" value="${ins.provider||''}"></div>
+        <div class="form-group"><label>Policy Number</label><input id="f-inspolicy" type="text" value="${ins.policyNo||''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Renewal Date</label><input id="f-insrenewal" type="date" value="${ins.renewal||''}"></div>
+        <div class="form-group"><label>Annual Premium</label><input id="f-inspremium" type="number" step="0.01" value="${ins.premium||''}" placeholder="0.00"></div>
+      </div>
+    </div>`;
+}
+
+function toggleMortgageFields() {
+  const noMort = document.getElementById('f-nomortgage').checked;
+  document.getElementById('mortgage-fields').style.display = noMort ? 'none' : 'block';
+}
+
+function collectForm() {
+  const noMort = document.getElementById('f-nomortgage').checked;
+  return {
+    address: document.getElementById('f-address').value.trim(),
+    postcode: document.getElementById('f-postcode').value.trim().toUpperCase(),
+    notes: document.getElementById('f-notes').value.trim(),
+    mortgage: {
+      noMortgage: noMort,
+      accountNo: noMort ? '' : document.getElementById('f-accountno').value.trim(),
+      monthlyPayment: noMort ? '' : document.getElementById('f-monthly').value,
+      rate: noMort ? '' : document.getElementById('f-rate').value,
+      balance: noMort ? '' : document.getElementById('f-balance').value,
+      rateEnd: noMort ? '' : document.getElementById('f-rateend').value,
+      mortgageEnd: noMort ? '' : document.getElementById('f-mortend').value,
+    },
+    certs: {
+      gas: document.getElementById('f-gas').value,
+      electric: document.getElementById('f-electric').value,
+      epc: document.getElementById('f-epc').value,
+      fire: document.getElementById('f-fire').value,
+      legionella: document.getElementById('f-legionella').value,
+      pat: document.getElementById('f-pat').value,
+    },
+    insurance: {
+      provider: document.getElementById('f-insprovider').value.trim(),
+      policyNo: document.getElementById('f-inspolicy').value.trim(),
+      renewal: document.getElementById('f-insrenewal').value,
+      premium: document.getElementById('f-inspremium').value,
+    },
+    alarms: {
+      smoke1: document.getElementById('f-smoke1').value,
+      smoke2: document.getElementById('f-smoke2').value,
+      co: document.getElementById('f-co').value,
+    }
+  };
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Add Property';
+  document.getElementById('modal-body').innerHTML = buildForm();
+  document.getElementById('modal-backdrop').style.display = 'flex';
+}
+
+function openEditModal(id) {
+  editingId = id;
+  const p = properties.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modal-title').textContent = 'Edit Property';
+  document.getElementById('modal-body').innerHTML = buildForm(p);
+  document.getElementById('modal-backdrop').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').style.display = 'none';
+  editingId = null;
+}
+
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('modal-backdrop')) closeModal();
+}
+
+function saveProperty() {
+  const data = collectForm();
+  if (!data.address) { showToast('Please enter an address'); return; }
+  if (editingId) {
+    const idx = properties.findIndex(p => p.id === editingId);
+    if (idx >= 0) properties[idx] = { ...data, id: editingId };
+  } else {
+    properties.push({ ...data, id: uid() });
+  }
+  saveData(properties);
+  closeModal();
+  render();
+  showToast(editingId ? '✔ Property updated' : '✔ Property added', 'success');
+}
+
+// ══════════════════════════════════════
+// DELETE
+// ══════════════════════════════════════
+function askDelete(id) {
+  deleteId = id;
+  document.getElementById('confirm-backdrop').style.display = 'flex';
+}
+function closeConfirm() {
+  document.getElementById('confirm-backdrop').style.display = 'none';
+  deleteId = null;
+}
+function confirmDelete() {
+  if (!deleteId) return;
+  properties = properties.filter(p => p.id !== deleteId);
+  saveData(properties);
+  closeConfirm();
+  render();
+  showToast('Property deleted');
+}
+
+// ══════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════
+function exportCSV() {
+  if (!properties.length) { showToast('No properties to export'); return; }
+  const headers = ['Address','Postcode','No Mortgage','Account No','Monthly Payment','Rate %','Rate End','Mortgage End','Balance','Gas Cert','Electric Cert','EPC','Fire Cert','Legionella','PAT','Smoke Alarm 1','Smoke Alarm 2','CO Detector','Ins Provider','Ins Policy','Ins Renewal','Ins Premium','Notes'];
+  const rows = properties.map(p => [
+    p.address, p.postcode,
+    p.mortgage?.noMortgage ? 'Yes' : 'No',
+    p.mortgage?.accountNo||'', p.mortgage?.monthlyPayment||'', p.mortgage?.rate||'',
+    p.mortgage?.rateEnd||'', p.mortgage?.mortgageEnd||'', p.mortgage?.balance||'',
+    p.certs?.gas||'', p.certs?.electric||'', p.certs?.epc||'',
+    p.certs?.fire||'', p.certs?.legionella||'', p.certs?.pat||'',
+    p.alarms?.smoke1||'', p.alarms?.smoke2||'', p.alarms?.co||'',
+    p.insurance?.provider||'', p.insurance?.policyNo||'',
+    p.insurance?.renewal||'', p.insurance?.premium||'',
+    (p.notes||'').replace(/\n/g,' ')
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'property-portfolio.csv';
+  a.click();
+  showToast('✔ CSV exported', 'success');
+}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 2800);
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+render();
+</script>
+</body>
+</html>
