@@ -405,6 +405,21 @@ select option { background: var(--surface); }
 .confirm-btns { display: flex; gap: 8px; }
 .confirm-btns .btn { flex: 1; }
 
+/* DATE PICKER */
+.date-select {
+  display: flex;
+  gap: 4px;
+}
+.date-select select {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 0.78rem;
+  text-align: center;
+}
+.date-select select:first-child { flex: 1.2; } /* day */
+.date-select select:nth-child(2) { flex: 2; }  /* month */
+.date-select select:last-child { flex: 1.8; }  /* year */
+
 /* TOAST */
 .toast {
   position: fixed;
@@ -847,6 +862,90 @@ function render() {
 // ══════════════════════════════════════
 // MODAL FORM
 // ══════════════════════════════════════
+// ══════════════════════════════════════
+// CUSTOM DATE PICKER
+// ══════════════════════════════════════
+function makeDatePicker(id, value, yearFrom, yearTo) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let selDay='', selMonth='', selYear='';
+  if (value) {
+    const parts = value.split('-');
+    selYear = parts[0]; selMonth = parts[1]; selDay = parts[2];
+  }
+
+  const days = '<option value="">Day</option>' + Array.from({length:31},(_,i)=>{
+    const d = String(i+1).padStart(2,'0');
+    return `<option value="${d}" ${selDay===d?'selected':''}>${i+1}</option>`;
+  }).join('');
+
+  const monthOpts = '<option value="">Month</option>' + months.map((m,i)=>{
+    const mv = String(i+1).padStart(2,'0');
+    return `<option value="${mv}" ${selMonth===mv?'selected':''}>${m}</option>`;
+  }).join('');
+
+  const yFrom = yearFrom || new Date().getFullYear() - 5;
+  const yTo = yearTo || new Date().getFullYear() + 30;
+  const yearOpts = '<option value="">Year</option>' + Array.from({length:yTo-yFrom+1},(_,i)=>{
+    const y = String(yFrom+i);
+    return `<option value="${y}" ${selYear===y?'selected':''}>${y}</option>`;
+  }).join('');
+
+  return `<div class="date-select" id="dp-${id}">
+    <select id="dp-${id}-d" onchange="updateDateVal('${id}')">${days}</select>
+    <select id="dp-${id}-m" onchange="updateDateVal('${id}')">${monthOpts}</select>
+    <select id="dp-${id}-y" onchange="updateDateVal('${id}')">${yearOpts}</select>
+    <input type="hidden" id="${id}" value="${value||''}">
+  </div>`;
+}
+
+function updateDateVal(id) {
+  const d = document.getElementById('dp-'+id+'-d').value;
+  const m = document.getElementById('dp-'+id+'-m').value;
+  const y = document.getElementById('dp-'+id+'-y').value;
+  document.getElementById(id).value = (y && m && d) ? y+'-'+m+'-'+d : '';
+}
+
+function getDateVal(id) {
+  return document.getElementById(id)?.value || '';
+}
+
+
+// ══════════════════════════════════════
+// CUSTOM DATE PICKER
+// ══════════════════════════════════════
+function makeDatePicker(id, value) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let day='', mon='', yr='';
+  if (value) { const p=value.split('-'); yr=p[0]; mon=p[1]; day=p[2]; }
+  const curYear = new Date().getFullYear();
+  const years = [];
+  for (let y = curYear-5; y <= curYear+30; y++) years.push(y);
+  const days = [];
+  for (let d = 1; d <= 31; d++) days.push(String(d).padStart(2,'0'));
+
+  const dayOpts = ['<option value="">Day</option>', ...days.map(d => `<option value="${d}" ${d===day?'selected':''}>${d}</option>`)].join('');
+  const monOpts = ['<option value="">Month</option>', ...months.map((m,i) => { const v=String(i+1).padStart(2,'0'); return `<option value="${v}" ${v===mon?'selected':''}>${m}</option>`; })].join('');
+  const yrOpts = ['<option value="">Year</option>', ...years.map(y => `<option value="${y}" ${String(y)===yr?'selected':''}>${y}</option>`)].join('');
+
+  return `<div style="display:flex;gap:4px" id="dp-${id}">
+    <select id="${id}-day" style="flex:1;padding:7px 4px;font-size:0.78rem" onchange="syncDate('${id}')">${dayOpts}</select>
+    <select id="${id}-mon" style="flex:1.4;padding:7px 4px;font-size:0.78rem" onchange="syncDate('${id}')">${monOpts}</select>
+    <select id="${id}-yr" style="flex:1.4;padding:7px 4px;font-size:0.78rem" onchange="syncDate('${id}')">${yrOpts}</select>
+    <input type="hidden" id="${id}" value="${value||''}">
+  </div>`;
+}
+
+function syncDate(id) {
+  const day = document.getElementById(id+'-day').value;
+  const mon = document.getElementById(id+'-mon').value;
+  const yr = document.getElementById(id+'-yr').value;
+  document.getElementById(id).value = (yr && mon && day) ? `${yr}-${mon}-${day}` : '';
+}
+
+function getDateVal(id) {
+  return document.getElementById(id)?.value || '';
+}
+
 function buildForm(p = {}) {
   const m = p.mortgage || {};
   const c = p.certs || {};
@@ -903,11 +1002,11 @@ function buildForm(p = {}) {
         <div class="form-row">
           <div class="form-group">
             <label>Rate Fix End Date</label>
-            <input id="f-rateend" type="date" value="${m.rateEnd||''}">
+            ${makeDatePicker("f-rateend", m.rateEnd||"", new Date().getFullYear()-2, new Date().getFullYear()+10)}
           </div>
           <div class="form-group">
             <label>Mortgage End Date</label>
-            <input id="f-mortend" type="date" value="${m.mortgageEnd||''}">
+            ${makeDatePicker("f-mortend", m.mortgageEnd||"", new Date().getFullYear()-2, new Date().getFullYear()+40)}
           </div>
         </div>
       </div>
@@ -916,21 +1015,21 @@ function buildForm(p = {}) {
     <div class="modal-section">
       <div class="modal-section-title">Safety Certificates (expiry dates)</div>
       <div class="cert-grid">
-        <div class="form-group"><label>⛽ Gas Safety</label><input id="f-gas" type="date" value="${c.gas||''}"></div>
-        <div class="form-group"><label>⚡ Electrical (EICR)</label><input id="f-electric" type="date" value="${c.electric||''}"></div>
-        <div class="form-group"><label>🏷 EPC</label><input id="f-epc" type="date" value="${c.epc||''}"></div>
-        <div class="form-group"><label>🔥 Fire Safety</label><input id="f-fire" type="date" value="${c.fire||''}"></div>
-        <div class="form-group"><label>💧 Legionella</label><input id="f-legionella" type="date" value="${c.legionella||''}"></div>
-        <div class="form-group"><label>🔌 PAT Testing</label><input id="f-pat" type="date" value="${c.pat||''}"></div>
+        <div class="form-group"><label>⛽ Gas Safety</label>${makeDatePicker("f-gas", c.gas||"", new Date().getFullYear()-1, new Date().getFullYear()+15)}</div>
+        <div class="form-group"><label>⚡ Electrical (EICR)</label>${makeDatePicker("f-electric", c.electric||"", new Date().getFullYear()-1, new Date().getFullYear()+15)}</div>
+        <div class="form-group"><label>🏷 EPC</label>${makeDatePicker("f-epc", c.epc||"", new Date().getFullYear()-1, new Date().getFullYear()+15)}</div>
+        <div class="form-group"><label>🔥 Fire Safety</label>${makeDatePicker("f-fire", c.fire||"", new Date().getFullYear()-1, new Date().getFullYear()+15)}</div>
+        <div class="form-group"><label>💧 Legionella</label>${makeDatePicker("f-legionella", c.legionella||"", new Date().getFullYear()-1, new Date().getFullYear()+15)}</div>
+        <div class="form-group"><label>🔌 PAT Testing</label>${makeDatePicker("f-pat", c.pat||"", new Date().getFullYear()-1, new Date().getFullYear()+15)}</div>
       </div>
     </div>
 
     <div class="modal-section">
       <div class="modal-section-title">🚨 Alarms (date last checked serviceable)</div>
       <div class="cert-grid">
-        <div class="form-group"><label>🔴 Smoke Alarm 1</label><input id="f-smoke1" type="date" value="${a.smoke1||''}"></div>
-        <div class="form-group"><label>🔴 Smoke Alarm 2 (if applicable)</label><input id="f-smoke2" type="date" value="${a.smoke2||''}"></div>
-        <div class="form-group"><label>💨 CO Detector (if applicable)</label><input id="f-co" type="date" value="${a.co||''}"></div>
+        <div class="form-group"><label>🔴 Smoke Alarm 1</label>${makeDatePicker("f-smoke1", a.smoke1||"", new Date().getFullYear()-3, new Date().getFullYear()+1)}</div>
+        <div class="form-group"><label>🔴 Smoke Alarm 2 (if applicable)</label>${makeDatePicker("f-smoke2", a.smoke2||"", new Date().getFullYear()-3, new Date().getFullYear()+1)}</div>
+        <div class="form-group"><label>💨 CO Detector (if applicable)</label>${makeDatePicker("f-co", a.co||"", new Date().getFullYear()-3, new Date().getFullYear()+1)}</div>
       </div>
     </div>
 
@@ -941,7 +1040,7 @@ function buildForm(p = {}) {
         <div class="form-group"><label>Policy Number</label><input id="f-inspolicy" type="text" value="${ins.policyNo||''}"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Renewal Date</label><input id="f-insrenewal" type="date" value="${ins.renewal||''}"></div>
+        <div class="form-group"><label>Renewal Date</label>${makeDatePicker("f-insrenewal", ins.renewal||"", new Date().getFullYear()-1, new Date().getFullYear()+5)}</div>
         <div class="form-group"><label>Annual Premium</label><input id="f-inspremium" type="number" step="0.01" value="${ins.premium||''}" placeholder="0.00"></div>
       </div>
     </div>`;
@@ -964,27 +1063,27 @@ function collectForm() {
       monthlyPayment: noMort ? '' : document.getElementById('f-monthly').value,
       rate: noMort ? '' : document.getElementById('f-rate').value,
       balance: noMort ? '' : document.getElementById('f-balance').value,
-      rateEnd: noMort ? '' : document.getElementById('f-rateend').value,
-      mortgageEnd: noMort ? '' : document.getElementById('f-mortend').value,
+      rateEnd: noMort ? '' : getDateVal('f-rateend'),
+      mortgageEnd: noMort ? '' : getDateVal('f-mortend'),
     },
     certs: {
-      gas: document.getElementById('f-gas').value,
-      electric: document.getElementById('f-electric').value,
-      epc: document.getElementById('f-epc').value,
-      fire: document.getElementById('f-fire').value,
-      legionella: document.getElementById('f-legionella').value,
-      pat: document.getElementById('f-pat').value,
+      gas: getDateVal('f-gas'),
+      electric: getDateVal('f-electric'),
+      epc: getDateVal('f-epc'),
+      fire: getDateVal('f-fire'),
+      legionella: getDateVal('f-legionella'),
+      pat: getDateVal('f-pat'),
     },
     insurance: {
       provider: document.getElementById('f-insprovider').value.trim(),
       policyNo: document.getElementById('f-inspolicy').value.trim(),
-      renewal: document.getElementById('f-insrenewal').value,
+      renewal: getDateVal('f-insrenewal'),
       premium: document.getElementById('f-inspremium').value,
     },
     alarms: {
-      smoke1: document.getElementById('f-smoke1').value,
-      smoke2: document.getElementById('f-smoke2').value,
-      co: document.getElementById('f-co').value,
+      smoke1: getDateVal('f-smoke1'),
+      smoke2: getDateVal('f-smoke2'),
+      co: getDateVal('f-co'),
     }
   };
 }
